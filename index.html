@@ -6,6 +6,10 @@
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>Welcome to Apex Legends</title>
     <style>
+        * {
+            box-sizing: border-box;
+        }
+
         body {
             margin: 0;
             padding: 0;
@@ -23,6 +27,7 @@
             justify-content: center;
             height: 100vh;
             position: relative;
+            text-align: center;
         }
 
         .title {
@@ -64,6 +69,20 @@
 
             100% {
                 opacity: 0;
+            }
+        }
+
+        @media screen and (max-width: 768px) {
+            .btn {
+                top: 77%;
+                left: 80%;
+                transform: translate(-50%, -50%);
+            }
+        }
+
+        @media screen and (max-width: 480px) {
+            .btn {
+                top: 70%;
             }
         }
     </style>
