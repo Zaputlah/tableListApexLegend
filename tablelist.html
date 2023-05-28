@@ -13,6 +13,32 @@
             padding: 0;
         }
 
+        .pagination {
+            display: flex;
+            justify-content: center;
+            margin-top: 20px;
+        }
+
+        .pagination-link {
+            display: inline-block;
+            margin-right: 5px;
+            padding: 5px 10px;
+            background-color: #f1f1f1;
+            color: #333;
+            text-decoration: none;
+            border-radius: 3px;
+            transition: background-color 0.3s;
+        }
+
+        .pagination-link.active {
+            background-color: #333;
+            color: #fff;
+        }
+
+        .pagination-link:hover {
+            background-color: #ddd;
+        }
+
         .container {
             max-width: 960px;
             margin: 0 auto;
@@ -208,6 +234,7 @@
             </thead>
             <tbody id="tableBody"></tbody>
         </table>
+        <div id="paginationContainer"></div>
 
         <div id="modal">
             <div id="modalContent"></div>
@@ -222,6 +249,8 @@
                 const tableBody = document.getElementById('tableBody');
                 const categoryCount = document.getElementById('categoryCount');
                 let filteredData = data;
+                let currentPage = 1;
+                const itemsPerPage = 5;
 
                 const searchInput = document.getElementById('searchInput');
                 searchInput.addEventListener('input', () => {
@@ -236,7 +265,11 @@
                 function renderTable(data) {
                     tableBody.innerHTML = '';
 
-                    data.forEach(item => {
+                    const startIndex = (currentPage - 1) * itemsPerPage;
+                    const endIndex = startIndex + itemsPerPage;
+                    const visibleData = data.slice(startIndex, endIndex);
+
+                    visibleData.forEach(item => {
                         const row = document.createElement('tr');
                         const idCell = document.createElement('td');
                         idCell.textContent = item._id.$oid;
@@ -258,7 +291,25 @@
                         tableBody.appendChild(row);
                     });
 
-                    categoryCount.textContent = `Jumlah kategori yang sama: ${data.length.toLocaleString()}`;
+                    // Render pagination links
+                    const paginationContainer = document.getElementById('paginationContainer');
+                    paginationContainer.innerHTML = '';
+
+                    const totalPages = Math.ceil(data.length / itemsPerPage);
+                    for (let i = 1; i <= totalPages; i++) {
+                        const pageLink = document.createElement('a');
+                        pageLink.href = '#';
+                        pageLink.textContent = i;
+                        pageLink.classList.add('pagination-link');
+                        if (i === currentPage) {
+                            pageLink.classList.add('active');
+                        }
+                        pageLink.addEventListener('click', () => {
+                            currentPage = i;
+                            renderTable(filteredData);
+                        });
+                        paginationContainer.appendChild(pageLink);
+                    } categoryCount.textContent = `Jumlah kategori yang sama: ${data.length.toLocaleString()}`;
                 }
 
                 renderTable(data);
@@ -267,35 +318,36 @@
                 const modalContent = document.getElementById('modalContent');
                 function openModal(item) {
                     modalContent.innerHTML = `
-                    <div class="modal-header">
-                        <h1>Detail Item</h1>
-                        <button id="closeModalButton" class="close-button">&times;</button>
+                <div class="modal-header">
+                    <h1>Detail Item</h1>
+                    <button id="closeModalButton" class="close-button">&times;</button>
+                </div>
+                <div class="modal-body">
+                    <div class="item-info">
+                        <p>ID: ${item._id.$oid}</p>
+                        <p>Home: ${item.home}</p>
+                        <p>Name: ${item.name}</p>
+                        <p>Nickname: ${item.nickname}</p>
+                        <p>Umur: ${item.age}</p>
+                        <p>Type: ${item.type}</p>
+                        <p>Quote: ${item.quote}</p>
+                        <p>Desc: ${item.desc}</p>
+                        <img id="modalThumbnail" src="${item.thumbnail.large}" alt="Thumbnail">
+                        <p>Abilities:</p>
+                        <p id="abilitiesList"></p>
+                        <p>Youtube:</p>
+                        <a id="youtubeLink" href="${item.yt_trailer}" target="_blank">Tautan YouTube</a>
                     </div>
-                    <div class="modal-body">
-                        <div class="item-info">
-                            <p>ID: ${item._id.$oid}</p>
-                            <p>Home: ${item.home}</p>
-                            <p>Name: ${item.name}</p>
-                            <p>Nickname: ${item.nickname}</p>
-                            <p>Umur: ${item.age}</p>
-                            <p>Type: ${item.type}</p>
-                            <p>Quote: ${item.quote}</p>
-                            <p>Desc: ${item.desc}</p>
-                            <img id="modalThumbnail" src="${item.thumbnail.large}" alt="Thumbnail">
-                            <p>Abilities:</p>
-                            <p id="abilitiesList"></p>
-                            <p>Youtube:</p>
-                            <a id="youtubeLink" href="${item.yt_trailer}" target="_blank">Tautan YouTube</a>
-                        </div>
-                    </div>
-                `;
+                </div>
+            `;
 
 
                     item.ability.forEach(ability => {
+                        const abilitiesList = document.getElementById('abilitiesList');
                         const abilityItem = document.createElement('li');
                         abilityItem.innerHTML = `
-                        <strong>${ability.type}</strong> - ${ability.title}: ${ability.desc}
-                    `;
+                    <strong>${ability.type}</strong> - ${ability.title}: ${ability.desc}
+                `;
                         abilitiesList.appendChild(abilityItem);
                     });
 
@@ -325,6 +377,7 @@
                 console.error('Error fetching data:', error);
             });
     </script>
+
 </body>
 
 </html>
